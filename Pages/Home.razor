@@ -1,0 +1,116 @@
+﻿@page "/"
+@inject CarDataService CarDataService
+@inject NavigationManager NavigationManager
+@inject ILocalStorageService LocalStorage
+
+<div class="row">
+    <div class="col-lg-8 my-auto">
+        <img src="/car.jpg" alt="Car Image" width="100%">
+    </div>
+    <div class="col-lg-4">
+        <div class="box-list mt-4">
+            @if (selectedBrandId == null)
+            {
+                <p class="choose-config-title">Choose your brand.</p>
+                @foreach (var brand in brands ?? [])
+                {
+                    <div class="box" @onclick="() => SelectBrand(brand.Id)">
+                        <b class="brand-name">@brand.Name</b>
+                        <p class="base-price">From @brand.Price.ToString("C", new CultureInfo("de-DE"))</p>
+                        <a @onclick="() => SelectBrand(brand.Id)" class="select-brand">Configuration</a>
+                    </div>
+                }
+            }
+            @if (selectedBrandId != null)
+            {
+                <p class="choose-config-title">Configurations for @brands?.FirstOrDefault(b => b.Id ==
+                selectedBrandId)?.Name
+                </p>
+
+
+                <select class="form-select" @onchange="e => selectedModelId = int.Parse(e.Value.ToString())">
+                <option value="">Select Model</option>
+                @foreach (var model in models ?? [])
+                    {
+                        <option value="@model.Id">@model.Name</option>
+                    }
+                </select>
+
+                <select class="form-select" @onchange="e => selectedEngineId = int.Parse(e.Value.ToString())">
+                <option value="">Select Engine</option>
+                @foreach (var engine in engines ?? [])
+                    {
+                        <option value="@engine.Id">@engine.Name</option>
+                    }
+                </select>
+
+                <select class="form-select" @onchange="e => selectedPackageId = int.Parse(e.Value.ToString())">
+                <option value="">Select Package</option>
+                @foreach (var package in packages ?? [])
+                    {
+                        <option value="@package.Id">@package.Name</option>
+                    }
+                </select>
+
+                <select class="form-select" @onchange="e => selectedTireId = int.Parse(e.Value.ToString())">
+                <option value="">Select Tire</option>
+                @foreach (var tire in tires ?? [])
+                    {
+                        <option value="@tire.Id">@tire.Name</option>
+                    }
+                </select>
+
+                <button class="btn btn-primary" disabled="@IsCheckoutButtonDisabled" @onclick="checkout">Checkout</button>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<Brand>? brands;
+    private List<CarModel>? models;
+    private List<Engine>? engines;
+    private List<Package>? packages;
+    private List<Tire>? tires;
+    private int? selectedBrandId;
+    private int? selectedModelId;
+    private int? selectedEngineId;
+    private int? selectedPackageId;
+    private int? selectedTireId;
+
+    protected override void OnInitialized()
+    {
+        brands = CarDataService.GetBrands();
+    }
+
+    private async Task SelectBrand(int brandId)
+    {
+        selectedBrandId = brandId;
+        models = CarDataService.GetModelsByBrandId(brandId);
+        engines = CarDataService.GetEnginesByBrandId(brandId);
+        packages = CarDataService.GetPackagesByBrandId(brandId);
+        tires = CarDataService.GetTiresByBrandId(brandId);
+    }
+
+    private bool IsCheckoutButtonDisabled =>
+    !selectedModelId.HasValue ||
+    !selectedEngineId.HasValue ||
+    !selectedPackageId.HasValue ||
+    !selectedTireId.HasValue;
+
+    private async void checkout()
+    {
+        var sessionData = new
+        {
+            BrandId = selectedBrandId,
+            ModelId = selectedModelId,
+            EngineId = selectedEngineId,
+            PackageId = selectedPackageId,
+            TireId = selectedTireId
+        };
+
+        await LocalStorage.SetItemAsync("selectedConfig", sessionData);
+
+        NavigationManager.NavigateTo("checkout");
+    }
+}

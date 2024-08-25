@@ -1,0 +1,257 @@
+@page "/checkout"
+@inject CarDataService CarDataService
+@inject NavigationManager NavigationManager
+@inject ILocalStorageService LocalStorage
+@inject IJSRuntime JS
+@inject HttpClient Http
+
+<div class="container pt-4 pb-4">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card" id="invoice">
+                <div class="card-body">
+                    <div class="invoice-title">
+                        <h4 class="float-end font-size-15">Invoice #DS0204 <span
+                                class="badge bg-warning font-size-12 ms-2">Unpaid</span></h4>
+                        <div class="mb-4">
+                            <h2 class="mb-1 text-muted">inraycars.com</h2>
+                        </div>
+                        <div class="text-muted">
+                            <p class="mb-1">Holstenstraße 40, 25560 Schenefeld</p>
+                            <p class="mb-1"> hello@inraycars.com</p>
+                            <p>012-345-6789</p>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="text-muted">
+                                <h6 class="font-size-16 mb-3">Billed To:</h6>
+                                <h6 class="font-size-15 mb-2">Baran Toro</h6>
+                                <p class="mb-1">Zimmermannstraße 36/B, 37075 Göttingen</p>
+                                <p class="mb-1">torobaran@gmail.com</p>
+                                <p>001-234-5678</p>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="text-muted text-sm-end">
+                                <div class="d-flex justify-content-end align-items-center gap-2">
+                                    <h6 class="font-size-15 m-0">Invoice No:</h6>
+                                    <p class="m-0">#DZ0112</p>
+                                </div>
+                                <div class="mt-3 d-flex justify-content-end align-items-center gap-2">
+                                    <h6 class="font-size-15 m-0">Invoice Date:</h6>
+                                    <p class="m-0">27 Aug, 2024</p>
+                                </div>
+                                <div class="mt-3 d-flex justify-content-end align-items-center gap-2">
+                                    <h6 class="font-size-15 m-0">Order No:</h6>
+                                    <p class="m-0">#1123456</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="py-2">
+                        <h6 class="font-size-15">Order Summary</h6>
+
+                        <div class="table-responsive">
+                            <table class="table align-middle table-nowrap table-centered mb-0">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 70px;">No.</th>
+                                        <th>Item</th>
+                                        <th>Price</th>
+                                        <th>Quantity</th>
+                                        <th class="text-end" style="width: 120px;">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <th scope="row">01</th>
+                                        <td>
+                                            <div>
+                                                <h6 class="text-truncate font-size-14 mb-1">@selectedBrand?.Name
+                                                    @selectedModel?.Name</h6>
+                                                <p class="text-muted mb-0">
+                                                    <small>
+                                                        Package: @selectedPackage?.Name
+                                                        (+@selectedPackage?.Price.ToString("C", new
+                                                               System.Globalization.CultureInfo("de-DE")))
+                                                    </small>
+                                                </p>
+                                            </div>
+                                        </td>
+                                        <td>@FormattedBasePricePlusModelPrice</td>
+                                        <td>1</td>
+                                        <td class="text-end">@FormattedBasePricePlusModelPrice</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">02</th>
+                                        <td>
+                                            <div>
+                                                <h6 class="text-truncate font-size-14 mb-1">@selectedEngine?.Name</h6>
+                                            </div>
+                                        </td>
+                                        <td>@selectedEngine?.Price.ToString("C", new
+                                                     System.Globalization.CultureInfo("de-DE"))</td>
+                                        <td>1</td>
+                                        <td class="text-end">@selectedEngine?.Price.ToString("C", new
+                                            System.Globalization.CultureInfo("de-DE"))</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">03</th>
+                                        <td>
+                                            <div>
+                                                <h6 class="text-truncate font-size-14 mb-1">@selectedTire?.Name</h6>
+                                            </div>
+                                        </td>
+                                        <td>@selectedTire?.Price.ToString("C", new
+                                                     System.Globalization.CultureInfo("de-DE"))</td>
+                                        <td>1</td>
+                                        <td class="text-end">@selectedTire?.Price.ToString("C", new
+                                            System.Globalization.CultureInfo("de-DE"))</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" colspan="4" class="text-end">Sub Total</th>
+                                        <td class="text-end">@FormattedTotalPrice</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" colspan="4" class="border-0 text-end">
+                                            Shipping Charge :</th>
+                                        <td class="border-0 text-end">FREE</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" colspan="4" class="border-0 text-end">
+                                            Tax</th>
+                                        <td class="border-0 text-end">@FormattedVAT</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" colspan="4" class="border-0 text-end">Total</th>
+                                        <td class="border-0 text-end" style="min-width: 160px;">
+                                            <h4 class="m-0 fw-semibold">@FormattedGrandTotal</h4>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="d-print-none mt-4">
+                <div class="float-end">
+                    <button class="btn btn-success me-1" @onclick="PrintDocument">Print</button>
+                    <button class="btn btn-secondary me-1 w-md" @onclick="GeneratePDF">Generate PDF</button>
+                    <button class="btn btn-primary w-md" @onclick="Sign">Send to Sign</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private Brand? selectedBrand;
+    private CarModel? selectedModel;
+    private Engine? selectedEngine;
+    private Package? selectedPackage;
+    private Tire? selectedTire;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var sessionData = await LocalStorage.GetItemAsync<Dictionary<string, int?>>("selectedConfig");
+
+        if (sessionData != null)
+        {
+            var selectedBrandId = sessionData.TryGetValue("BrandId", out var brandId) ? brandId : null;
+            var selectedModelId = sessionData.TryGetValue("ModelId", out var modelId) ? modelId : null;
+            var selectedEngineId = sessionData.TryGetValue("EngineId", out var engineId) ? engineId : null;
+            var selectedPackageId = sessionData.TryGetValue("PackageId", out var packageId) ? packageId : null;
+            var selectedTireId = sessionData.TryGetValue("TireId", out var tireId) ? tireId : null;
+
+            var brands = CarDataService.GetBrands();
+            var models = selectedBrandId.HasValue ? CarDataService.GetModelsByBrandId(selectedBrandId.Value) : new List<CarModel>();
+            var engines = selectedBrandId.HasValue ? CarDataService.GetEnginesByBrandId(selectedBrandId.Value) : new List<Engine>();
+            var packages = selectedBrandId.HasValue ? CarDataService.GetPackagesByBrandId(selectedBrandId.Value) : new
+            List<Package>();
+            var tires = selectedBrandId.HasValue ? CarDataService.GetTiresByBrandId(selectedBrandId.Value) : new List<Tire>();
+
+            selectedBrand = brands.FirstOrDefault(b => b.Id == selectedBrandId);
+            selectedModel = models.FirstOrDefault(m => m.Id == selectedModelId);
+            selectedEngine = engines.FirstOrDefault(e => e.Id == selectedEngineId);
+            selectedPackage = packages.FirstOrDefault(p => p.Id == selectedPackageId);
+            selectedTire = tires.FirstOrDefault(t => t.Id == selectedTireId);
+
+        }
+    }
+
+    private decimal TotalPrice =>
+    (selectedBrand?.Price ?? 0) +
+    (selectedModel?.Price ?? 0) +
+    (selectedEngine?.Price ?? 0) +
+    (selectedPackage?.Price ?? 0) +
+    (selectedTire?.Price ?? 0);
+
+    private string FormattedTotalPrice => TotalPrice.ToString("C", new System.Globalization.CultureInfo("de-DE"));
+
+    private decimal basePricePlusModelPrice =>
+    (selectedBrand?.Price ?? 0) +
+    (selectedModel?.Price ?? 0);
+
+    private string FormattedBasePricePlusModelPrice => basePricePlusModelPrice.ToString("C", new
+    System.Globalization.CultureInfo("de-DE"));
+
+    private decimal calculateVAT(decimal amount, decimal percentage = 18)
+    {
+        return amount * percentage / 100;
+    }
+    private string FormattedVAT => calculateVAT(TotalPrice).ToString("C", new System.Globalization.CultureInfo("de-DE"));
+
+    private decimal GrandTotal => TotalPrice + calculateVAT(TotalPrice);
+    private string FormattedGrandTotal => GrandTotal.ToString("C", new System.Globalization.CultureInfo("de-DE"));
+
+    private async Task GeneratePDF()
+    {
+        await JS.InvokeVoidAsync("createAndDownloadPDF");
+    }
+    private async Task PrintDocument()
+    {
+        await JS.InvokeAsync<string>("printPageArea", "invoice");
+    }
+
+    private async Task Sign()
+    {
+        var HTMLContent = await JS.InvokeAsync<string>("getElementContentById", "invoice");
+
+        var pdfData = await JS.InvokeAsync<byte[]>("generatePdf", HTMLContent);
+        await SendToDigiSigner(pdfData);
+    }
+
+    private async Task SendToDigiSigner(byte[] pdfData)
+    {
+        Console.WriteLine(pdfData);
+
+        var apiKey = "b80a54e0-febe-482c-9623-13545d9e0de3";
+        var client = new HttpClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+
+        var content = new MultipartFormDataContent();
+        content.Add(new ByteArrayContent(pdfData), "file", "document.pdf");
+
+        Console.WriteLine(content);
+
+        var response = await client.PostAsync("https://api.digisigner.com/v1/documents", content);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var signedPdf = await response.Content.ReadAsByteArrayAsync();
+            // Signed PDF
+        }
+        else
+        {
+            // Error handling
+        }
+    }
+
+
+}
